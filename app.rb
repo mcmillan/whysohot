@@ -48,6 +48,11 @@ get '/' do
   erb :index
 end
 
+get '/readings.csv' do
+  content_type :csv
+  Reading.all.map { |r| "#{r.temperature},#{r.taken_at.strftime('%d-%m-%Y %H:%M')}"}.join("\n")
+end
+
 post '/readings' do
   halt 401, 'Invalid API key' if params[:api_key] != ENV['API_KEY']
 
