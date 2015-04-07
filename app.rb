@@ -47,9 +47,10 @@ post '/readings' do
   halt 401, 'Invalid API key' if params[:api_key] != ENV['API_KEY']
 
   temperature = params[:temperature]
+  taken_at = params[:taken_at] || Time.now
 
-  reading = Reading.new(temperature)
+  reading = Reading.new(temperature, taken_at)
   reading.save
 
-  reading
+  201
 end
