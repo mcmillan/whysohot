@@ -4,29 +4,80 @@
     <title>Why is it so hot in here?</title>
 
     <style>
-      body {
-        background: #f00;
-        font: 14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-        -webkit-font-smoothing: antialiased;
+      * {
+        padding: 0;
+        margin: 0;
       }
 
-      .temperature {
+      body {
+        background: rgb(<%= (@hotness * 255).to_i %>, 0, <%= (@coldness * 255).to_i %>);
+        font: 14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: 1px;
+        color: #fff;
+      }
+
+      .container {
         position: absolute;
         top: 50%;
         left: 0;
         right: 0;
         transform: translate(0, -50%);
-        color: #fff;
-        font-size: 120px;
-        font-weight: bold;
         text-align: center;
+      }
+
+      .currently {
+        font-size: 100px;
+        letter-spacing: 5px;
+        margin-bottom: 20px;
+      }
+
+      .previously {
+        width: 460px;
+        margin: 14px auto 0;
+        padding: 0 20px;
+        text-align: left;
+      }
+
+      .previously .temperature {
+        font-weight: bold;
+      }
+
+      .previously .timestamp {
+        float: right;
+      }
+
+      @media screen and (max-width: 500px) {
+        .previously {
+          width: auto;
+        }
+      }
+
+      @media screen and (max-height: 400px) {
+        .container {
+          position: relative;
+          top: 0;
+          transform: none;
+          padding-top: 20px;
+        }
       }
     </style>
   </head>
 
   <body>
-    <div class="temperature">
-      <%= @reading.temperature %>&deg;C
+    <div class="container">
+      <div class="currently">
+        <%= @readings.first.temperature %>&deg;C
+      </div>
+
+      <div>Previously:</div>
+
+      <% @readings[1..-1].each do |reading| %>
+        <div class="previously">
+          <div class="timestamp"><%= reading.taken_at.strftime('%H:%M') %></div>
+          <div class="temperature"><%= reading.temperature %>&deg;C</div>
+        </div>
+      <% end %>
     </div>
   </body>
 </html>

@@ -17,11 +17,7 @@ class Reading
   attr_accessor :temperature, :taken_at
 
   def self.all
-    Redis.current.lrange(LIST_NAME, 0, -1).map { |r| from_json(r) }.reverse
-  end
-
-  def self.current
-    all.first
+    Redis.current.lrange(LIST_NAME, 0, 5).map { |r| from_json(r) }.reverse
   end
 
   def self.from_json(reading)
@@ -43,7 +39,12 @@ class Reading
 end
 
 get '/' do
-  @reading = Reading.current
+  @readings = Reading.all
+  min = 15
+  max = 25
+  @hotness = [[@readings.first.temperature - min, 0].max, max - min].min / (max - min).to_f
+  @coldness  = 1 - @hotness
+
   erb :index
 end
 
