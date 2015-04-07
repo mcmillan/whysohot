@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Why is it so hot in here?</title>
+
+    <style>
+      body {
+        background: #f00;
+        font: 14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .temperature {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translate(0, -50%);
+        color: #fff;
+        font-size: 120px;
+        font-weight: bold;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="temperature">
+      <%= @reading.temperature %>&deg;C
+    </div>
+  </body>
+</html>

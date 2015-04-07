@@ -20,13 +20,17 @@ class Reading
     Redis.current.lrange(LIST_NAME, 0, -1).map { |r| from_json(r) }.reverse
   end
 
+  def self.current
+    all.first
+  end
+
   def self.from_json(reading)
     reading = JSON.parse(reading)
     new(reading['temperature'], reading['taken_at'])
   end
 
   def initialize(temperature, taken_at = Time.now)
-    @temperature, @taken_at = temperature, Time.parse(taken_at.to_s)
+    @temperature, @taken_at = temperature.to_f, Time.parse(taken_at.to_s)
   end
 
   def to_json(*args)
@@ -38,9 +42,9 @@ class Reading
   end
 end
 
-get '/readings' do
-  content_type :json
-  Reading.all.to_json
+get '/' do
+  @reading = Reading.current
+  erb :index
 end
 
 post '/readings' do
