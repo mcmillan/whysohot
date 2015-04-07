@@ -2,12 +2,17 @@ require 'json'
 require 'time'
 require 'redis'
 require 'sinatra'
+require 'pusher'
 
 if development?
   require 'sinatra/reloader'
   require 'dotenv'
   Dotenv.load
 end
+
+Pusher.app_id = ENV['PUSHER_APP_ID']
+Pusher.key = ENV['PUSHER_KEY']
+Pusher.secret = ENV['PUSHER_SECRET']
 
 Redis.new(url: ENV['REDIS_URL'])
 
@@ -42,8 +47,7 @@ get '/' do
   @readings = Reading.all
   min = 15
   max = 25
-  @hotness = [[@readings.first.temperature - min, 0].max, max - min].min / (max - min).to_f
-  @coldness  = 1 - @hotness
+
 
   erb :index
 end
@@ -61,6 +65,13 @@ post '/readings' do
 
   reading = Reading.new(temperature, taken_at)
   reading.save
+
+  Pusher.trigger(
+    'readings',
+    'new',
+    temperature: reading.temperature,
+    taken_at: reading.taken_at.strftime('%H:%M')
+  )
 
   201
 end
