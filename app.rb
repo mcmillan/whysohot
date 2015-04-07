@@ -45,10 +45,6 @@ end
 
 get '/' do
   @readings = Reading.all
-  min = 15
-  max = 25
-
-
   erb :index
 end
 
