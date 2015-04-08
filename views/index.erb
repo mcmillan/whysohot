@@ -38,6 +38,7 @@
         margin: 14px auto 0;
         padding: 0 20px;
         text-align: left;
+        display: none;
       }
 
       .previously .temperature {
@@ -74,6 +75,12 @@
         stroke-width: 1.5px;
       }
 
+      .area {
+        fill: #fff;
+        opacity: 0.33;
+        stroke-width: 0;
+      }
+
       .axis path,
       .axis line {
         fill: none;
@@ -89,7 +96,7 @@
         <%= @readings.first.temperature %>&deg;C
       </div>
 
-      <div>Previously:</div>
+      <!-- <div>Previously:</div> -->
 
       <% @readings[0..4].each do |reading| %>
         <div class="previously">
@@ -104,7 +111,7 @@
     <script src="/graph.js"></script>
     <script src="/app.js"></script>
     <script type="text/javascript">
-      Graph.init(<%= @readings.reverse.map(&:temperature) %>);
+      Graph.init(<%= @readings.reverse.to_json %>);
       var pusher = new Pusher('<%= ENV['PUSHER_KEY'] %>');
       var channel = pusher.subscribe('readings');
       channel.bind('new', addTemperature);

@@ -31,5 +31,5 @@ function addTemperature(data) {
 
   document.querySelector('.container').removeChild(document.querySelector('.previously:last-of-type'));
 
-  Graph.push(data.temperature);
+  Graph.push(data);
 }

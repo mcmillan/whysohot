@@ -22,7 +22,7 @@ class Reading
   attr_accessor :temperature, :taken_at
 
   def self.all
-    Redis.current.lrange(LIST_NAME, -31, -1).map { |r| from_json(r) }.reverse
+    Redis.current.lrange(LIST_NAME, -61, -1).map { |r| from_json(r) }.reverse
   end
 
   def self.from_json(reading)
