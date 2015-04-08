@@ -22,7 +22,11 @@ class Reading
   attr_accessor :temperature, :taken_at
 
   def self.all
-    Redis.current.lrange(LIST_NAME, 0, -1).map { |r| from_json(r) }.reverse[0..5]
+    Redis.current.lrange(LIST_NAME, 0, -1).map { |r| from_json(r) }.reverse
+  end
+
+  def self.recent
+    all[0..5]
   end
 
   def self.from_json(reading)
@@ -44,13 +48,13 @@ class Reading
 end
 
 get '/' do
-  @readings = Reading.all
+  @readings = Reading.recent
   erb :index
 end
 
 get '/readings.csv' do
   content_type :csv
-  Reading.all.map { |r| "#{r.temperature},#{r.taken_at.strftime('%d-%m-%Y %H:%M')}"}.join("\n")
+  Reading.all.map { |r| "#{r.temperature},#{r.taken_at.strftime('%d-%m-%Y %H:%M')}" }.join("\n")
 end
 
 post '/readings' do
