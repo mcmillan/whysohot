@@ -30,6 +30,11 @@ get '/' do
   erb :index
 end
 
+get '/readings' do
+  @readings = Reading.all
+  erb :readings
+end
+
 get '/readings.json' do
   content_type :json
   Reading.recent.to_json
