@@ -143,7 +143,7 @@
         });
 
         var poll = function () {
-          $http.get('/readings.json')
+        $http.get('/readings.json')
             .success(function(readings) {
               $scope.readings = readings;
             })

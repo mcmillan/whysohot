@@ -22,7 +22,7 @@ class Reading
   field :taken_at, type: DateTime
 
   def self.recent
-    desc(:taken_at).limit(5)
+    desc(:taken_at).limit(60)
   end
 end
 

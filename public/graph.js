@@ -49,12 +49,10 @@
   function Graph(options) {
     options = options || {};
 
-    this.timeScale = options.timeScale || options.d3.time.second;
-    this.interval = options.interval || 200;
+    this.timeScale = options.timeScale || d3.time.minute;
     this.minTemp = options.minTemp || 0;
     this.maxTemp = options.maxTemp || 40;
 
-    this.axes = options.axes || {};
     this.dataGroups = {};
   }
 
