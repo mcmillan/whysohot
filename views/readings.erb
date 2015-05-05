@@ -1,0 +1,18 @@
+<table border="1" cellpadding="5" cellspacing="2" width="100%">
+  <thead>
+    <tr>
+      <th width="50%">Timestamp</th>
+      <th width="25%">Inside</th>
+      <th width="25%">Outside</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @readings.each do |reading| %>
+      <tr>
+        <td width="50%"><%= reading.taken_at %></td>
+        <td width="25%"><%= reading.f35_temperature %>&deg;C</td>
+        <td width="25%"><%= reading.outside_temperature %>&deg;C</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
