@@ -11,6 +11,13 @@
         margin: 0;
       }
 
+      html, body {
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+        overflow: hidden;
+      }
+
       body {
         font: 14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -56,13 +63,13 @@
       }
 
       @media screen and (max-height: 400px) {
-        .container {
+/*        .container {
           position: relative;
           top: 0;
           transform: none;
           padding-top: 20px;
         }
-      }
+*/      }
 
       svg {
         font: 10px sans-serif;
@@ -71,6 +78,7 @@
 
       .line {
         fill: none;
+        opacity: 0.67;
         stroke: #fff;
         stroke-width: 1.5px;
       }
@@ -115,6 +123,9 @@
       var pusher = new Pusher('<%= ENV['PUSHER_KEY'] %>');
       var channel = pusher.subscribe('readings');
       channel.bind('new', addTemperature);
+      setInterval(function () {
+        Graph.push({temperature: 25 + (Math.random() - 0.5) * 5, taken_at: new Date})
+      }, 1000);
     </script>
   </body>
 </html>
