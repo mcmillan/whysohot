@@ -12,7 +12,6 @@
     data.forEach(this.push.bind(this));
   }
 
-
   DataGroup.prototype.init = function (data) {
     data.forEach(this.push.bind(this));
   };
@@ -142,6 +141,6 @@
     }
   };
 
-  return Graph;
-
+  window.Graph = Graph;
+  window.DataGroup = DataGroup;
 })(window, d3);
