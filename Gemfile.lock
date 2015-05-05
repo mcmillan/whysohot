@@ -16,7 +16,6 @@ GEM
     httparty (0.13.3)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
-    httpclient (2.6.0.1)
     i18n (0.7.0)
     json (1.8.2)
     mongoid (3.1.6)
@@ -30,16 +29,11 @@ GEM
     origin (1.1.0)
     puma (2.11.0)
       rack (>= 1.1, < 2.0)
-    pusher (0.14.4)
-      httpclient (~> 2.5)
-      multi_json (~> 1.0)
-      signature (~> 0.1.8)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    signature (0.1.8)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -63,6 +57,5 @@ DEPENDENCIES
   httparty
   mongoid
   puma
-  pusher
   sinatra
   sinatra-contrib
