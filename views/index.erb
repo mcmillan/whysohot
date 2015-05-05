@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html ng-app="whySoHot">
   <head>
     <title>Why is it so hot in here?</title>
 
@@ -16,6 +16,7 @@
         -webkit-font-smoothing: antialiased;
         letter-spacing: 1px;
         color: #fff;
+        background: red;
       }
 
       .container {
@@ -30,7 +31,6 @@
       .currently {
         font-size: 100px;
         letter-spacing: 5px;
-        margin-bottom: 20px;
       }
 
       .previously {
@@ -40,12 +40,17 @@
         text-align: left;
       }
 
-      .previously .temperature {
-        font-weight: bold;
-      }
-
       .previously .timestamp {
         float: right;
+      }
+
+      p {
+        margin: 15px 0;
+      }
+
+      .outside {
+        padding-bottom: 15px;
+        border-bottom: 2px rgba(255, 255, 255, 0.2) solid;
       }
 
       @media screen and (max-width: 500px) {
@@ -54,7 +59,7 @@
         }
       }
 
-      @media screen and (max-height: 400px) {
+      @media screen and (max-height: 500px) {
         .container {
           position: relative;
           top: 0;
@@ -66,57 +71,36 @@
   </head>
 
   <body>
-    <div class="container">
-      <div class="currently" data-temperature="<%= @readings.first.temperature %>" data-taken-at="<%= @readings.first.taken_at.strftime('%H:%M') %>">
-        <%= @readings.first.temperature %>&deg;C
+    <div class="container" ng-controller="ReadingCtrl">
+      <p>Inside, it's currently</p>
+      <div class="currently">
+        {{readings[0].f35_temperature}}&deg;C
       </div>
-
-      <div>Previously:</div>
-
-      <% @readings[1..-1].each do |reading| %>
-        <div class="previously">
-          <div class="timestamp"><%= reading.taken_at.strftime('%H:%M') %></div>
-          <div class="temperature"><%= reading.temperature %>&deg;C</div>
+      <p class="outside">Outside, it's <strong>{{readings[0].outside_temperature}}&deg;C</strong>.</p>
+      <p>Previously:</p>
+      <div class="previously" ng-repeat="reading in readings.slice(1)">
+        <div class="timestamp">{{reading.taken_at | date : 'dd MMM yyyy HH:mm' }}</div>
+        <div class="temperature">
+          <strong>{{reading.f35_temperature}}&deg;C</strong> in,
+          <strong>{{reading.outside_temperature}}&deg;C</strong> out
         </div>
-      <% end %>
+      </div>
     </div>
 
-    <script src="//js.pusher.com/2.2/pusher.min.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
     <script type="text/javascript">
-      var currentContainer = document.querySelector('.currently');
+      var app = angular.module('whySoHot', []);
 
-      function setBackgroundFromTemperature(temperature) {
-        temperature = parseFloat(temperature);
-        var min = 10,
-            max = 30,
-            hotness = Math.min(Math.max(temperature - min, 0), max - min) / (max - min),
-            coldness = 1 - hotness,
-            red = Math.floor(hotness * 255),
-            blue = Math.floor(coldness * 255);
+      app.controller('ReadingCtrl', function($http, $scope) {
+        $scope.readings = [];
 
-        document.body.style.backgroundColor = 'rgb(' + red + ', 0, ' + blue + ')';
-      }
-
-      setBackgroundFromTemperature(currentContainer.dataset.temperature);
-
-      var pusher = new Pusher('<%= ENV['PUSHER_KEY'] %>');
-      var channel = pusher.subscribe('readings');
-      channel.bind('new', function(data) {
-        var previous = document.createElement('div');
-        previous.className = 'previously';
-        previous.innerHTML = '<div class="timestamp">' +
-          currentContainer.dataset.takenAt + '</div><div class="temperature">' +
-          currentContainer.dataset.temperature + '&deg;C</div>';
-
-        document.querySelector('.container').insertBefore(previous, document.querySelector('.previously'));
-        // console.log(currentTemp);
-
-        currentContainer.innerHTML = data.temperature + '&deg;C';
-        currentContainer.dataset.temperature = data.temperature;
-        currentContainer.dataset.takenAt = data.taken_at;
-        setBackgroundFromTemperature(data.temperature);
-
-        document.querySelector('.container').removeChild(document.querySelector('.previously:last-of-type'));
+        $http.get('/readings.json')
+          .success(function(readings) {
+            $scope.readings = readings;
+          })
+          .error(function() {
+            alert('Something has gone horribly awry. Try reloading the page!');
+          })
       });
     </script>
   </body>

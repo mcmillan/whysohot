@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'redis'
+gem 'mongoid'
+gem 'bson_ext'
+gem 'httparty'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'dotenv'
