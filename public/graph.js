@@ -1,46 +1,110 @@
 (function (window, d3) {
-  var Graph = window.Graph = {};
+  "use strict";
 
-  var timeScale = d3.time.second;
-  var interval = 200;
-  var minTemp = 0;
-  var maxTemp = 40;
-  var paths = {};
-  var axes = {};
-  var n, data, width, height, x, y, line, svg, area;
+  function DataGroup(data, options) {
+    data = data || [];
+    options = options || {};
 
-  function draw() {
+    this.length = options.length || data.length || 60;
+    this.data = [];
+    this.paths = {};
+
+    data.forEach(this.push.bind(this));
+  }
+
+
+  DataGroup.prototype.init = function (data) {
+    data.forEach(this.push.bind(this));
+  };
+
+  DataGroup.prototype.draw = function (graph) {
+    return graph.svg
+      .append("g")
+        .attr("clip-path", "url(#clip)")
+      .append("path")
+        .datum(this.data)
+        .attr("class", "line")
+        .attr("d", graph.line)
+      .append("path")
+        .datum(this.data)
+        .attr("class", "area")
+        .attr("d", graph.area);
+  };
+
+  DataGroup.prototype.mock = function () {
+    return this.push({temperature: 25 + (Math.random() - 0.5) * 5, taken_at: new Date()});
+  };
+
+  DataGroup.prototype.convertDatum = function (raw) {
+    return {temperature: raw.temperature, timestamp: new Date(raw.taken_at)};
+  };
+
+  DataGroup.prototype.push = function (datum) {
+    this.data.push(this.convertDatum(datum));
+
+    if (this.data.length > this.length) {
+      this.data.shift();
+    }
+  };
+
+  function Graph(options) {
+    options = options || {};
+
+    this.timeScale = options.timeScale || options.d3.time.second;
+    this.interval = options.interval || 200;
+    this.minTemp = options.minTemp || 0;
+    this.maxTemp = options.maxTemp || 40;
+
+    this.axes = options.axes || {};
+    this.dataGroups = {};
+  }
+
+  Graph.prototype.pause = function () {
+    this.drawing = false;
+  };
+
+  Graph.prototype.draw = function () {
+    this.drawing = true;
+
     d3.select("svg").remove();
 
-    width = window.innerWidth;
-    height = window.innerHeight;
+    var name, n;
+    var axes = {};
 
-    svg = d3.select("body")
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    this.svg = d3
+      .select("body")
       .append("svg")
-      .attr("width", width)
-      .attr("height", height)
+        .attr("width", width)
+        .attr("height", height)
       .append("g");
 
     var now = new Date();
 
-    x = d3.scale.linear()
-      .domain([timeScale.offset(now, -n), timeScale.offset(now, -1)])
+    var x = d3
+      .scale.linear()
+      .domain([this.timeScale.offset(now, -n), this.timeScale.offset(now, -1)])
       .range([0, width]);
 
-    y = d3.scale.linear()
-        .domain([minTemp, maxTemp])
-        .range([height, 0]);
+    var y = d3
+      .scale.linear()
+      .domain([this.minTemp, this.maxTemp])
+      .range([height, 0]);
 
-    area = d3.svg.area()
+    this.area = d3
+      .svg.area()
       .x(function(d) { return x(d.timestamp); })
       .y0(height)
       .y1(function(d) { return y(d.temperature); });
 
-    line = d3.svg.line()
-        .x(function(d) { return x(d.timestamp); })
-        .y(function(d) { return y(d.temperature); });
+    this.line = d3.svg.line()
+      .x(function(d) { return x(d.timestamp); })
+      .y(function(d) { return y(d.temperature); });
 
-    svg.append("defs")
+    this.svg
+      .append("defs")
       .append("clipPath")
         .attr("id", "clip")
       .append("rect")
@@ -52,97 +116,32 @@
       .orient("top")
       .tickFormat(function (d) { return d3.time.format("%H:%M")(new Date(d)); });
 
-    paths.xAxis = svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + y(minTemp) + ")")
-      .call(axes.x);
+    this.paths.xAxis = this.svg
+      .append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + y(this.minTemp) + ")")
+        .call(axes.x);
 
-    axes.y = d3.svg.axis()
+    axes.y = d3
+      .svg.axis()
       .scale(y)
       .orient("right")
       .tickFormat(function (d) { return d + "°C"; });
 
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(axes.y);
+    this.svg
+      .append("g")
+        .attr("class", "y axis")
+        .call(axes.y);
 
-    paths.line = svg.append("g")
-        .attr("clip-path", "url(#clip)")
-      .append("path")
-        .datum(data)
-        .attr("class", "line")
-        .attr("d", line);
+    for (name in this.dataGroups) {
+      this.dataGroups[name].draw(this);
+    }
 
-    paths.area = svg.append("path")
-      .datum(data)
-      .attr("class", "area")
-      .attr("d", area);
-  }
-
-  function drawLine() {
-    // redraw the line, and slide it to the left
-    var now = new Date();
-    var offset = x(now) - x(timeScale.offset(now, 1));
-
-    paths.line
-      .attr("d", line)
-      // .attr("transform", null)
-      .attr("transform", "translate(" + offset + ",0)")
-      .transition()
-        .duration(interval)
-        .ease("linear")
-        .attr("transform", "translate(" + offset + ",0)")
-        .each("end", function () {});
-
-    paths.area
-      .attr("d", area)
-      // .attr("transform", null)
-      .transition()
-        .duration(interval)
-        .ease("linear")
-        .attr("transform", "translate(" + offset + ",0)")
-        .each("end", function () {});
-
-    // d3.select('x axis')
-    //   .attr("transform", null)
-    //   .transition()
-    //     .duration(800)
-    //     .ease("linear")
-    //     .attr("transform", "translate(" + offset + ", " + y(maxTemp) + ")")
-    //     .each("end", function () {})
-    //     .call(xAxis)
-  }
-
-  // function updateXAxis() {
-  //   now = new Date();
-  //   x = d3.scale.linear()
-  //     // .domain([0, n - 1])
-  //     .domain([d3.time.minute.offset(now, -n), now])
-  //     .range([0, width]);
-  // }
-
-  function convertDatum(raw) {
-    return {temperature: raw.temperature, timestamp: new Date(raw.taken_at)};
-  }
-
-  Graph.init = function (_data) {
-    data = _data.map(convertDatum);
-    n = _data.length - 1;
-    draw();
+    if (this.drawing) {
+      requestAnimationFrame(this.draw.bind(this));
+    }
   };
 
-  Graph.push = function (raw) {
-    var datum = convertDatum(raw);
-    data.push(datum);
-    drawLine();
-    setTimeout(data.shift.bind(data), interval + 100);
-  };
-
-  window.onresize = draw;
-
-  requestAnimationFrame(function frame() {
-    draw();
-    requestAnimationFrame(frame);
-  });
+  return Graph;
 
 })(window, d3);
